@@ -35,7 +35,6 @@
               cargo
               cargo-edit
               cargo-insta
-              cargo-watch
               rustPackages.clippy
               rustc
               rustfmt
