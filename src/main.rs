@@ -40,7 +40,7 @@ struct Config {
 
 fn main() {
     if let Err(err) = try_main() {
-        println!("{:#?}", err);
+        println!("{:?}", err);
         std::process::exit(1);
     }
 }
