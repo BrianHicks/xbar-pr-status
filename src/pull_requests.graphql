@@ -8,6 +8,12 @@ query PullRequests {
         commits(last: 1) {
           nodes {
             commit {
+              status {
+                contexts {
+                  context
+                  state
+                }
+              }
               statusCheckRollup {
                 state
               }
