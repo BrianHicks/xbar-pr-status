@@ -55,7 +55,20 @@ fn try_main() -> Result<()> {
     let prs =
         PullRequests::fetch(config.github_api_token).context("could not fetch pull requests")?;
 
-    println!("{:#?}", prs);
+    let top_line: Vec<String> = Vec::new();
+    let menu_lines: Vec<String> = Vec::new();
+
+    for pr_opt in prs.viewer.pull_requests.nodes.unwrap_or_else(|| Vec::new()) {
+        let pr = pr_opt.context("got a null PR")?;
+        let commits = pr.commits.nodes.context("got a null list of commits")?;
+        let commit = match commits.get(0) {
+            Some(Some(node)) => &node.commit,
+            Some(None) => anyhow::bail!("got a null commit"),
+            None => anyhow::bail!("got a null list of commits"),
+        };
+
+        println!("{:#?}", commit);
+    }
 
     Ok(())
 }
