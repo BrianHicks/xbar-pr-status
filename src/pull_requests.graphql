@@ -1,0 +1,36 @@
+query PullRequests {
+  viewer {
+    pullRequests(last: 99, states: [OPEN]) {
+      edges {
+        node {
+          title
+          url
+          updatedAt
+          commits(last: 1) {
+            edges {
+              node {
+                commit {
+                  statusCheckRollup {
+                    state
+                  }
+                }
+              }
+            }
+          }
+          autoMergeRequest {
+            enabledAt
+          }
+          latestOpinionatedReviews(last: 1) {
+            edges {
+              node {
+                id
+                state
+                createdAt
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
