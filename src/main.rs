@@ -45,6 +45,14 @@ fn main() {
     }
 }
 
+fn try_main() -> Result<()> {
+    let config = Config::parse();
+
+    println!("{:#?}", config);
+
+    Ok(())
+}
+
 type URI = String;
 
 type DateTime = String;
@@ -56,11 +64,3 @@ type DateTime = String;
     response_derives = "Debug"
 )]
 struct PullRequests;
-
-fn try_main() -> Result<()> {
-    let config = Config::parse();
-
-    println!("{:#?}", config);
-
-    Ok(())
-}
