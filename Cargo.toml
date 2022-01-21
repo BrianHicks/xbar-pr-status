@@ -6,3 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "1.0.52"
+clap = { version = "3.0.9", features = [ "std", "color", "suggestions", "derive", "cargo", "wrap_help", "env" ] }
+graphql_client = "0.10.0"
