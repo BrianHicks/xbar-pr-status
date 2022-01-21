@@ -28,6 +28,13 @@
         defaultPackage = packages.xbar-pr-status;
         overlay = final: prev: { xbar-pr-status = packages.xbar-pr-status; };
 
+        packages.update-github-graphql-schema =
+          pkgs.writeShellScriptBin "update-github-graphql-schema" ''
+            set -euo pipefail
+            ROOT="$(${pkgs.git}/bin/git rev-parse --show-toplevel)"
+            ${pkgs.curl}/bin/curl https://raw.githubusercontent.com/octokit/graphql-schema/master/schema.graphql > "$ROOT/src/github.schema.graphql"
+          '';
+
         # `nix develop`
         devShell = pkgs.mkShell {
           nativeBuildInputs = with pkgs;
@@ -41,6 +48,9 @@
 
               # for some reason this seems to be required, especially on macOS
               libiconv
+
+              # scripts
+              packages.update-github-graphql-schema
             ] ++ darwinInputs;
         };
       });
