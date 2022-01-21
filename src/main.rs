@@ -5,8 +5,8 @@ use clap::Parser;
 #[clap(about, author)]
 struct Config {
     // TODO: document scopes
-    #[clap(env = "GITHUB_TOKEN")]
-    github_token: String,
+    #[clap(env = "GITHUB_API_TOKEN")]
+    github_api_token: String,
 
     /// Emoji to use when CI is passing and the PR is approved
     #[clap(long, env = "SUCCESS_AND_APPROVED_EMOJI", default_value = "🌝")]
