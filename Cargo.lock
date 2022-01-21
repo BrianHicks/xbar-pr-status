@@ -526,4 +526,5 @@ dependencies = [
  "anyhow",
  "clap",
  "graphql_client",
+ "serde",
 ]
