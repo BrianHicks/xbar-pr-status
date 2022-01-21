@@ -25,9 +25,7 @@ query PullRequests {
         }
         latestOpinionatedReviews(last: 1) {
           nodes {
-            id
             state
-            createdAt
           }
         }
       }
