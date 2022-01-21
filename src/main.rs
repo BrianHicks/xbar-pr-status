@@ -1,5 +1,6 @@
 use anyhow::Result;
 use clap::Parser;
+use graphql_client::GraphQLQuery;
 
 #[derive(Debug, Parser)]
 #[clap(about, author)]
@@ -43,6 +44,18 @@ fn main() {
         std::process::exit(1);
     }
 }
+
+type URI = String;
+
+type DateTime = String;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/github.schema.graphql",
+    query_path = "src/pull_requests.graphql",
+    response_derives = "Debug"
+)]
+struct PullRequests;
 
 fn try_main() -> Result<()> {
     let config = Config::parse();
