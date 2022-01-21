@@ -1,6 +1,8 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use clap::Parser;
-use graphql_client::GraphQLQuery;
+use graphql_client::{GraphQLQuery, Response};
+use reqwest::blocking::Client;
+use reqwest::header;
 
 #[derive(Debug, Parser)]
 #[clap(about, author)]
@@ -39,6 +41,8 @@ struct Config {
 }
 
 fn main() {
+    env_logger::Builder::from_env("XBAR_PR_STATUS_LOG").init();
+
     if let Err(err) = try_main() {
         println!("{:?}", err);
         std::process::exit(1);
@@ -48,7 +52,10 @@ fn main() {
 fn try_main() -> Result<()> {
     let config = Config::parse();
 
-    println!("{:#?}", config);
+    let prs =
+        PullRequests::fetch(config.github_api_token).context("could not fetch pull requests")?;
+
+    println!("{:#?}", prs);
 
     Ok(())
 }
@@ -64,3 +71,44 @@ type DateTime = String;
     response_derives = "Debug"
 )]
 struct PullRequests;
+
+impl PullRequests {
+    fn fetch(api_token: String) -> Result<pull_requests::ResponseData> {
+        let query = Self::build_query(pull_requests::Variables {});
+
+        let client = Client::builder()
+            .user_agent(concat!(
+                env!("CARGO_PKG_NAME"),
+                "/",
+                env!("CARGO_PKG_VERSION")
+            ))
+            .build()
+            .context("could not build the HTTP client")?;
+
+        let response = client
+            .post("https://api.github.com/graphql")
+            .header(
+                header::AUTHORIZATION,
+                header::HeaderValue::from_str(&format!("Bearer {}", api_token))
+                    .context("could not create an Authorization header from the specified token")?,
+            )
+            .json(&query)
+            .send()
+            .context("could not request data from GitHub's API")?;
+
+        let data: Response<pull_requests::ResponseData> = response
+            .json()
+            .context("could not deserialize pull requests from response")?;
+
+        if let Some(errs) = data.errors {
+            for err in errs {
+                log::error!("{}", err)
+            }
+        }
+
+        match data.data {
+            Some(data) => Ok(data),
+            None => anyhow::bail!("there was no data in the response"),
+        }
+    }
+}
