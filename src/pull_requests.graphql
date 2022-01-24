@@ -1,6 +1,6 @@
 query PullRequests {
   viewer {
-    pullRequests(first: 1, states: [OPEN]) {
+    pullRequests(last: 25, states: [OPEN]) {
       nodes {
         title
         url
