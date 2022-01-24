@@ -1,4 +1,6 @@
 mod check_status;
+mod pull_request;
+
 use anyhow::{anyhow, bail, Context, Result};
 use clap::Parser;
 use reqwest::blocking::Client;
