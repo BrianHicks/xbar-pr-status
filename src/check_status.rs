@@ -9,6 +9,15 @@ pub enum CheckStatus {
     Failure,
     Pending,
     Success,
+
+    // additional statuses for check conclusions
+    ActionRequired,
+    TimedOut,
+    Cancelled,
+    Neutral,
+    Skipped,
+    StartupFailure,
+    Stale,
 }
 
 impl FromStr for CheckStatus {
@@ -16,11 +25,18 @@ impl FromStr for CheckStatus {
 
     fn from_str(s: &str) -> Result<Self> {
         match s {
+            "ACTION_REQUIRED" => Ok(Self::ActionRequired),
+            "CANCELLED" => Ok(Self::Cancelled),
             "ERROR" => Ok(Self::Error),
             "EXPECTED" => Ok(Self::Expected),
             "FAILURE" => Ok(Self::Failure),
+            "NEUTRAL" => Ok(Self::Neutral),
             "PENDING" => Ok(Self::Pending),
+            "SKIPPED" => Ok(Self::Skipped),
+            "STALE" => Ok(Self::Stale),
+            "STARTUP_FAILURE" => Ok(Self::StartupFailure),
             "SUCCESS" => Ok(Self::Success),
+            "TIMED_OUT" => Ok(Self::TimedOut),
             _ => bail!("got unexpected value {} as a CheckStatus", s),
         }
     }
@@ -87,6 +103,59 @@ mod tests {
                 CheckStatus::Success,
                 CheckStatus::from_str("SUCCESS").unwrap()
             )
+        }
+
+        #[test]
+        fn action_required() {
+            assert_eq!(
+                CheckStatus::ActionRequired,
+                CheckStatus::from_str("ACTION_REQUIRED").unwrap()
+            )
+        }
+
+        #[test]
+        fn timed_out() {
+            assert_eq!(
+                CheckStatus::TimedOut,
+                CheckStatus::from_str("TIMED_OUT").unwrap()
+            )
+        }
+
+        #[test]
+        fn cancelled() {
+            assert_eq!(
+                CheckStatus::Cancelled,
+                CheckStatus::from_str("CANCELLED").unwrap()
+            )
+        }
+
+        #[test]
+        fn neutral() {
+            assert_eq!(
+                CheckStatus::Neutral,
+                CheckStatus::from_str("NEUTRAL").unwrap()
+            )
+        }
+
+        #[test]
+        fn skipped() {
+            assert_eq!(
+                CheckStatus::Skipped,
+                CheckStatus::from_str("SKIPPED").unwrap()
+            )
+        }
+
+        #[test]
+        fn startup_failure() {
+            assert_eq!(
+                CheckStatus::StartupFailure,
+                CheckStatus::from_str("STARTUP_FAILURE").unwrap()
+            )
+        }
+
+        #[test]
+        fn stale() {
+            assert_eq!(CheckStatus::Stale, CheckStatus::from_str("STALE").unwrap())
         }
 
         #[test]
