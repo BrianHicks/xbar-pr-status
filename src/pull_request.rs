@@ -10,6 +10,7 @@ pub struct PullRequest {
     url: String,
     updated_at: DateTime<FixedOffset>,
     approved: bool,
+    queued: bool,
     overall_status: Option<CheckStatus>,
     checks: Vec<Check>,
 }
@@ -64,6 +65,13 @@ impl PullRequest {
             None => Ok(false),
         }
     }
+
+    fn queued_from_pr(pr: &Value) -> Result<bool> {
+        Ok(!pr
+            .get("autoMergeRequest")
+            .ok_or_else(|| anyhow!("autoMergeRequest was missing"))?
+            .is_null())
+    }
 }
 
 impl TryFrom<&Value> for PullRequest {
@@ -80,6 +88,7 @@ impl TryFrom<&Value> for PullRequest {
             updated_at: DateTime::parse_from_rfc3339(pr.get_str("/updatedAt")?)
                 .context("updatedAt doesn't match the RFC3339 format")?,
             approved: Self::approved_from_pr(pr)?,
+            queued: Self::queued_from_pr(pr)?,
             overall_status: Self::overall_status_from_commit(commit)?,
             checks: Self::checks_from_commit(commit)?,
         })
@@ -151,6 +160,11 @@ mod tests {
         }
 
         #[test]
+        fn queued() {
+            assert_eq!(false, fixture().queued)
+        }
+
+        #[test]
         fn overall_status() {
             assert_eq!(Some(CheckStatus::Success), fixture().overall_status)
         }
@@ -206,6 +220,11 @@ mod tests {
         }
 
         #[test]
+        fn queued() {
+            assert_eq!(false, fixture().queued)
+        }
+
+        #[test]
         fn overall_status() {
             assert_eq!(Some(CheckStatus::Failure), fixture().overall_status)
         }
@@ -256,6 +275,11 @@ mod tests {
         }
 
         #[test]
+        fn queued() {
+            assert_eq!(false, fixture().queued)
+        }
+
+        #[test]
         fn overall_status() {
             assert_eq!(Some(CheckStatus::Failure), fixture().overall_status)
         }
@@ -303,6 +327,11 @@ mod tests {
         #[test]
         fn approved() {
             assert_eq!(false, fixture().approved)
+        }
+
+        #[test]
+        fn queued() {
+            assert_eq!(false, fixture().queued)
         }
 
         #[test]
