@@ -6,6 +6,7 @@ use serde_json::Value;
 #[derive(Debug)]
 pub struct PullRequest {
     title: String,
+    url: String,
     overall_status: Option<CheckStatus>,
     checks: Vec<Check>,
 }
@@ -62,6 +63,7 @@ impl TryFrom<&Value> for PullRequest {
 
         Ok(PullRequest {
             title: pr.get_str("/title")?.into(),
+            url: pr.get_str("/url")?.into(),
             overall_status: Self::overall_status_from_commit(commit)?,
             checks: Self::checks_from_commit(commit)?,
         })
@@ -120,6 +122,14 @@ mod tests {
         }
 
         #[test]
+        fn url() {
+            assert_eq!(
+                "https://github.com/org/repo/pull/1".to_string(),
+                fixture().url
+            )
+        }
+
+        #[test]
         fn overall_status() {
             assert_eq!(Some(CheckStatus::Success), fixture().overall_status)
         }
@@ -162,6 +172,14 @@ mod tests {
         }
 
         #[test]
+        fn url() {
+            assert_eq!(
+                "https://github.com/org/repo/pull/1".to_string(),
+                fixture().url
+            )
+        }
+
+        #[test]
         fn overall_status() {
             assert_eq!(Some(CheckStatus::Failure), fixture().overall_status)
         }
@@ -199,6 +217,14 @@ mod tests {
         }
 
         #[test]
+        fn url() {
+            assert_eq!(
+                "https://github.com/org/repo/pull/1".to_string(),
+                fixture().url
+            )
+        }
+
+        #[test]
         fn overall_status() {
             assert_eq!(Some(CheckStatus::Failure), fixture().overall_status)
         }
@@ -233,6 +259,14 @@ mod tests {
         #[test]
         fn title() {
             assert_eq!("Title".to_string(), fixture().title)
+        }
+
+        #[test]
+        fn url() {
+            assert_eq!(
+                "https://github.com/org/repo/pull/1".to_string(),
+                fixture().url
+            )
         }
 
         #[test]
