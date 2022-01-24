@@ -1,4 +1,5 @@
 mod check_status;
+mod navigate_value;
 mod pull_request;
 
 use anyhow::{bail, Context, Result};

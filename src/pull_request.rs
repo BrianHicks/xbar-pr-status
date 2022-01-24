@@ -1,4 +1,5 @@
 use crate::check_status::CheckStatus;
+use crate::navigate_value::NavigateValue;
 use anyhow::{anyhow, Context, Result};
 use serde_json::Value;
 
@@ -38,21 +39,12 @@ impl PullRequest {
             }
         }
 
-        if let Some(suites) = commit.pointer("/checkSuites/nodes") {
-            for suite in suites
-                .as_array()
-                .ok_or_else(|| anyhow!("suites was not an array"))?
-            {
-                if let Some(runs) = suite.pointer("/checkRuns/nodes") {
-                    for run in runs
-                        .as_array()
-                        .ok_or_else(|| anyhow!("runs was not an array"))?
-                    {
-                        out.push(Check::from_check_run(run).context(
-                            "could not a load a check run in the check suites/runs array",
-                        )?)
-                    }
-                }
+        for suite in commit.get_array("/checkSuites/nodes")? {
+            for run in suite.get_array("/checkRuns/nodes")? {
+                out.push(
+                    Check::from_check_run(run)
+                        .context("could not a load a check run in the check suites/runs array")?,
+                )
             }
         }
 
@@ -69,12 +61,7 @@ impl TryFrom<&Value> for PullRequest {
             .ok_or_else(|| anyhow!("could not get the last commit"))?;
 
         Ok(PullRequest {
-            title: pr
-                .get("title")
-                .ok_or_else(|| anyhow!("could not get title"))?
-                .as_str()
-                .ok_or_else(|| anyhow!("title was not a string"))?
-                .into(),
+            title: pr.get_str("/title")?.into(),
             overall_status: Self::overall_status_from_commit(commit)?,
             checks: Self::checks_from_commit(commit)?,
         })
@@ -91,45 +78,23 @@ pub struct Check {
 impl Check {
     fn from_context(context: &Value) -> Result<Check> {
         Ok(Check {
-            title: context
-                .get("context")
-                .ok_or_else(|| anyhow!("could not get context"))?
-                .as_str()
-                .ok_or_else(|| anyhow!("context was not a string"))?
-                .into(),
+            title: context.get_str("/context")?.into(),
             status: context
-                .get("state")
-                .ok_or_else(|| anyhow!("could not get state"))?
+                .get_str("/state")?
                 .try_into()
                 .context("could not load state from context")?,
-            url: context
-                .get("targetUrl")
-                .ok_or_else(|| anyhow!("could not get targetUrl"))?
-                .as_str()
-                .ok_or_else(|| anyhow!("targetUrl was not a string"))?
-                .into(),
+            url: context.get_str("/targetUrl")?.into(),
         })
     }
 
     fn from_check_run(run: &Value) -> Result<Check> {
         Ok(Check {
-            title: run
-                .get("title")
-                .ok_or_else(|| anyhow!("could not get title"))?
-                .as_str()
-                .ok_or_else(|| anyhow!("title was not a string"))?
-                .into(),
+            title: run.get_str("/title")?.into(),
             status: run
-                .get("conclusion")
-                .ok_or_else(|| anyhow!("could not get conclusion"))?
+                .get_str("/conclusion")?
                 .try_into()
                 .context("could not load conclusion from context")?,
-            url: run
-                .get("url")
-                .ok_or_else(|| anyhow!("could not get url"))?
-                .as_str()
-                .ok_or_else(|| anyhow!("url was not a string"))?
-                .into(),
+            url: run.get_str("/url")?.into(),
         })
     }
 }
