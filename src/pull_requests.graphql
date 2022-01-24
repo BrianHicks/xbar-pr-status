@@ -12,6 +12,7 @@ query PullRequests {
                 contexts {
                   context
                   state
+                  targetUrl
                 }
               }
               statusCheckRollup {
