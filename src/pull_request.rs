@@ -1,12 +1,14 @@
 use crate::check_status::CheckStatus;
 use crate::navigate_value::NavigateValue;
 use anyhow::{anyhow, Context, Result};
+use chrono::{DateTime, FixedOffset};
 use serde_json::Value;
 
 #[derive(Debug)]
 pub struct PullRequest {
     title: String,
     url: String,
+    updated_at: DateTime<FixedOffset>,
     overall_status: Option<CheckStatus>,
     checks: Vec<Check>,
 }
@@ -64,6 +66,8 @@ impl TryFrom<&Value> for PullRequest {
         Ok(PullRequest {
             title: pr.get_str("/title")?.into(),
             url: pr.get_str("/url")?.into(),
+            updated_at: DateTime::parse_from_rfc3339(pr.get_str("/updatedAt")?)
+                .context("updatedAt doesn't match the RFC3339 format")?,
             overall_status: Self::overall_status_from_commit(commit)?,
             checks: Self::checks_from_commit(commit)?,
         })
