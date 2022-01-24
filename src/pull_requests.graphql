@@ -15,6 +15,17 @@ query PullRequests {
                   targetUrl
                 }
               }
+              checkSuites(last: 10) {
+                nodes {
+                  checkRuns(last: 10) {
+                    nodes {
+                      title
+                      url
+                      conclusion
+                    }
+                  }
+                }
+              }
               statusCheckRollup {
                 state
               }
