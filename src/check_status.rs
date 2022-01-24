@@ -26,6 +26,14 @@ impl FromStr for CheckStatus {
     }
 }
 
+impl TryFrom<&str> for CheckStatus {
+    type Error = anyhow::Error;
+
+    fn try_from(s: &str) -> Result<Self> {
+        Self::from_str(s)
+    }
+}
+
 impl TryFrom<&Value> for CheckStatus {
     type Error = anyhow::Error;
 
