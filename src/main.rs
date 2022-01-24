@@ -6,6 +6,7 @@ mod xbar;
 use crate::navigate_value::NavigateValue;
 use crate::pull_request::PullRequest;
 use anyhow::{bail, Context, Result};
+use chrono::{Duration, Local};
 use clap::Parser;
 use reqwest::blocking::Client;
 use reqwest::header;
@@ -49,6 +50,10 @@ pub struct Config {
     /// Emoji to use when the PR enters the merge queue
     #[clap(long, env = "QUEUED_EMOJI", default_value = "✨")]
     queued_emoji: String,
+
+    /// Ignore PRs updated last before this many days ago
+    #[clap(long, env = "SINCE")]
+    since: Option<i64>,
 }
 
 fn main() {
@@ -62,6 +67,7 @@ fn main() {
 
 fn try_main() -> Result<()> {
     let config = Config::parse();
+    let cutoff_opt = config.since.map(|days| Local::now() - Duration::days(days));
 
     let prs = fetch(&config.github_api_token).context("could not fetch pull requests")?;
 
@@ -76,6 +82,11 @@ fn try_main() -> Result<()> {
                 return Err(err).context("could not load a Pull Request");
             }
         };
+
+        if matches!(cutoff_opt, Some(cutoff) if pr.updated_at < cutoff) {
+            continue;
+        }
+
         top_line.push(config.emoji_for(pr.status()));
         menu_lines.push(pr.to_xbar_menu(&config));
     }

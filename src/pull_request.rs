@@ -10,7 +10,7 @@ use serde_json::Value;
 pub struct PullRequest {
     title: String,
     url: String,
-    updated_at: DateTime<FixedOffset>,
+    pub updated_at: DateTime<FixedOffset>,
     approved: bool,
     queued: bool,
     overall_status: Option<CheckStatus>,
