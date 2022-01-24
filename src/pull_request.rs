@@ -2,7 +2,7 @@ use crate::check_status::CheckStatus;
 use crate::navigate_value::NavigateValue;
 use crate::xbar;
 use crate::Config;
-use anyhow::{anyhow, Context, Result};
+use anyhow::{anyhow, bail, Context, Result};
 use chrono::{DateTime, FixedOffset};
 use serde_json::Value;
 
@@ -156,10 +156,15 @@ impl Check {
     fn from_check_run(run: &Value) -> Result<Check> {
         Ok(Check {
             name: run.get_str("/name")?.into(),
-            status: run
-                .get_str("/conclusion")?
-                .try_into()
-                .context("could not load conclusion from context")?,
+            status: match run.get("conclusion") {
+                None => bail!("missing /conclusion in a check run"),
+                Some(Value::Null) => CheckStatus::Pending,
+                Some(conclusion) => conclusion
+                    .as_str()
+                    .ok_or_else(|| anyhow!("conclusion was not a string"))?
+                    .try_into()
+                    .context("could not convert conclusion to a status")?,
+            },
             url: run.get_str("/url")?.into(),
         })
     }
