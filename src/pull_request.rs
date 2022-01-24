@@ -114,7 +114,7 @@ impl TryFrom<&Value> for PullRequest {
 
 #[derive(Debug, PartialEq)]
 pub struct Check {
-    title: String,
+    name: String,
     status: CheckStatus,
     url: String,
 }
@@ -122,7 +122,7 @@ pub struct Check {
 impl Check {
     fn from_context(context: &Value) -> Result<Check> {
         Ok(Check {
-            title: context.get_str("/context")?.into(),
+            name: context.get_str("/context")?.into(),
             status: context
                 .get_str("/state")?
                 .try_into()
@@ -133,7 +133,7 @@ impl Check {
 
     fn from_check_run(run: &Value) -> Result<Check> {
         Ok(Check {
-            title: run.get_str("/title")?.into(),
+            name: run.get_str("/name")?.into(),
             status: run
                 .get_str("/conclusion")?
                 .try_into()
@@ -191,17 +191,17 @@ mod tests {
             assert_eq!(
                 vec![
                     Check {
-                        title: "Status 1".into(),
+                        name: "Status 1".into(),
                         status: CheckStatus::Success,
                         url: "https://url".into()
                     },
                     Check {
-                        title: "Status 2".into(),
+                        name: "Status 2".into(),
                         status: CheckStatus::Success,
                         url: "https://url".into()
                     },
                     Check {
-                        title: "Check 1".into(),
+                        name: "Check 1".into(),
                         status: CheckStatus::Success,
                         url: "https://github.com/org/repo/runs/1".into()
                     },
@@ -256,12 +256,12 @@ mod tests {
             assert_eq!(
                 vec![
                     Check {
-                        title: "Check 1".into(),
+                        name: "Check 1".into(),
                         status: CheckStatus::Failure,
                         url: "https://github.com/org/repo/runs/1".into()
                     },
                     Check {
-                        title: "Check 2".into(),
+                        name: "Check 2".into(),
                         status: CheckStatus::Cancelled,
                         url: "https://github.com/org/repo/runs/2".into()
                     },
@@ -316,12 +316,12 @@ mod tests {
             assert_eq!(
                 vec![
                     Check {
-                        title: "Check 1".into(),
+                        name: "Check 1".into(),
                         status: CheckStatus::Failure,
                         url: "https://github.com/org/repo/runs/1".into()
                     },
                     Check {
-                        title: "Check 2".into(),
+                        name: "Check 2".into(),
                         status: CheckStatus::Failure,
                         url: "https://github.com/org/repo/runs/2".into()
                     },

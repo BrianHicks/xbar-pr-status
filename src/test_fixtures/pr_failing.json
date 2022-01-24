@@ -13,12 +13,12 @@
                 "checkRuns": {
                   "nodes": [
                     {
-                      "title": "Check 1",
+                      "name": "Check 1",
                       "url": "https://github.com/org/repo/runs/1",
                       "conclusion": "FAILURE"
                     },
                     {
-                      "title": "Check 2",
+                      "name": "Check 2",
                       "url": "https://github.com/org/repo/runs/2",
                       "conclusion": "CANCELLED"
                     }

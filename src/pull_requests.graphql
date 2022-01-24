@@ -19,7 +19,7 @@ query PullRequests {
                 nodes {
                   checkRuns(last: 10) {
                     nodes {
-                      title
+                      name
                       url
                       conclusion
                     }
