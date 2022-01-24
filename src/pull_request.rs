@@ -1,5 +1,5 @@
 use crate::check_status::CheckStatus;
-use anyhow::{bail, Context, Result};
+use anyhow::{bail, Result};
 use serde_json::Value;
 
 #[derive(Debug)]
@@ -10,7 +10,7 @@ pub struct PullRequest {
 impl TryFrom<&Value> for PullRequest {
     type Error = anyhow::Error;
 
-    fn try_from(v: &Value) -> Result<PullRequest> {
+    fn try_from(_v: &Value) -> Result<PullRequest> {
         bail!("nah")
     }
 }
@@ -18,7 +18,6 @@ impl TryFrom<&Value> for PullRequest {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde_json::json;
 
     mod approved {
         use super::*;

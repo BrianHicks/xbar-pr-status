@@ -1,12 +1,11 @@
 mod check_status;
 mod pull_request;
 
-use anyhow::{anyhow, bail, Context, Result};
+use anyhow::{bail, Context, Result};
 use clap::Parser;
 use reqwest::blocking::Client;
 use reqwest::header;
 use serde_json::{json, Value};
-use std::str::FromStr;
 
 #[derive(Debug, Parser)]
 #[clap(about, author)]
@@ -59,82 +58,83 @@ fn try_main() -> Result<()> {
     // anyhow::bail!("x");
 
     let prs = fetch(config.github_api_token).context("could not fetch pull requests")?;
+    println!("{:#?}", prs);
 
-    let top_line: Vec<String> = Vec::new();
-    let menu_lines: Vec<String> = Vec::new();
+    // let top_line: Vec<String> = Vec::new();
+    // let menu_lines: Vec<String> = Vec::new();
 
-    for pr in prs
-        .pointer("/viewer/pullRequests/nodes")
-        .ok_or_else(|| anyhow!("could not get PRs"))?
-        .as_array()
-        .ok_or_else(|| anyhow!("/viewer/pullRequests/nodes was not an array"))?
-    {
-        // Determine the top-level status
-        let commit = pr
-            .pointer("/commits/nodes/0/commit")
-            .ok_or_else(|| anyhow!("could not get the last commit"))?;
+    // for pr in prs
+    //     .pointer("/viewer/pullRequests/nodes")
+    //     .ok_or_else(|| anyhow!("could not get PRs"))?
+    //     .as_array()
+    //     .ok_or_else(|| anyhow!("/viewer/pullRequests/nodes was not an array"))?
+    // {
+    //     // Determine the top-level status
+    //     let commit = pr
+    //         .pointer("/commits/nodes/0/commit")
+    //         .ok_or_else(|| anyhow!("could not get the last commit"))?;
 
-        let contexts: Vec<(&str, Status)> = Vec::new();
-        for context in commit
-            .pointer("/status/contexts")
-            .and_then(|v| v.as_array())
-            .unwrap_or_else(|| &Vec::new())
-        {
-            println!("{:#?}", context);
-        }
-        // let contexts: Result<Vec<(&str, &str)>> = commit
-        //     .pointer("/status/contexts")
-        //     .and_then(|v| v.as_array())
-        //     .map(|a| {
-        //         a.iter()
-        //             .flat_map(|context| {
-        //                 Ok((
-        //                     context
-        //                         .get("context")
-        //                         .ok_or_else(|| anyhow!("context was null"))?
-        //                         .as_str()
-        //                         .ok_or_else(|| anyhow!("context was not a string"))?,
-        //                     context
-        //                         .get("state")
-        //                         .ok_or_else(|| anyhow!("state was null"))?
-        //                         .try_into()?,
-        //                 ))
-        //             })
-        //             .collect::<Vec<(&str, Status)>>()
-        //     });
+    //     let contexts: Vec<(&str, Status)> = Vec::new();
+    //     for context in commit
+    //         .pointer("/status/contexts")
+    //         .and_then(|v| v.as_array())
+    //         .unwrap_or_else(|| &Vec::new())
+    //     {
+    //         println!("{:#?}", context);
+    //     }
+    //     // let contexts: Result<Vec<(&str, &str)>> = commit
+    //     //     .pointer("/status/contexts")
+    //     //     .and_then(|v| v.as_array())
+    //     //     .map(|a| {
+    //     //         a.iter()
+    //     //             .flat_map(|context| {
+    //     //                 Ok((
+    //     //                     context
+    //     //                         .get("context")
+    //     //                         .ok_or_else(|| anyhow!("context was null"))?
+    //     //                         .as_str()
+    //     //                         .ok_or_else(|| anyhow!("context was not a string"))?,
+    //     //                     context
+    //     //                         .get("state")
+    //     //                         .ok_or_else(|| anyhow!("state was null"))?
+    //     //                         .try_into()?,
+    //     //                 ))
+    //     //             })
+    //     //             .collect::<Vec<(&str, Status)>>()
+    //     //     });
 
-        let overall: Option<&str> = commit
-            .pointer("/statusCheckRollup/state")
-            .and_then(|state| state.as_str());
+    //     let overall: Option<&str> = commit
+    //         .pointer("/statusCheckRollup/state")
+    //         .and_then(|state| state.as_str());
 
-        println!("{:#?}", contexts);
-        println!("{:#?}", overall);
-    }
-
-    // for pr_opt in prs.viewer.pull_requests.nodes.unwrap_or_else(|| Vec::new()) {
-    //     let pr = pr_opt.context("got a null PR")?;
-
-    // Determine the top-level status
-    // let commits = pr.commits.nodes.context("got a null list of commits")?;
-    // let commit = match commits.get(0) {
-    //     Some(Some(node)) => &node.commit,
-    //     Some(None) => anyhow::bail!("got a null commit"),
-    //     None => anyhow::bail!("got a null list of commits"),
-    // };
-
-    // let rollup = commit
-    //     .status_check_rollup
-    //     .map(|rollup| rollup.state)
-    //     .unwrap_or()
-    //     // .as_ref()
-    //     // .map(|rollup| match rollup.state {
-    //     //     pull_requests::StatusState::EXPECTED => 1,
-    //     //     pull_requests::StatusState::ERROR => 0,
-    //     // });
-    //     ;
-
-    // println!("{:#?}", is_approved(&pr));
+    //     println!("{:#?}", contexts);
+    //     println!("{:#?}", overall);
     // }
+
+    // // for pr_opt in prs.viewer.pull_requests.nodes.unwrap_or_else(|| Vec::new()) {
+    // //     let pr = pr_opt.context("got a null PR")?;
+
+    // // Determine the top-level status
+    // // let commits = pr.commits.nodes.context("got a null list of commits")?;
+    // // let commit = match commits.get(0) {
+    // //     Some(Some(node)) => &node.commit,
+    // //     Some(None) => anyhow::bail!("got a null commit"),
+    // //     None => anyhow::bail!("got a null list of commits"),
+    // // };
+
+    // // let rollup = commit
+    // //     .status_check_rollup
+    // //     .map(|rollup| rollup.state)
+    // //     .unwrap_or()
+    // //     // .as_ref()
+    // //     // .map(|rollup| match rollup.state {
+    // //     //     pull_requests::StatusState::EXPECTED => 1,
+    // //     //     pull_requests::StatusState::ERROR => 0,
+    // //     // });
+    // //     ;
+
+    // // println!("{:#?}", is_approved(&pr));
+    // // }
 
     Ok(())
 }
