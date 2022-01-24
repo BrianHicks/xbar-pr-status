@@ -1,3 +1,4 @@
+mod check_status;
 use anyhow::{anyhow, bail, Context, Result};
 use clap::Parser;
 use reqwest::blocking::Client;
@@ -175,41 +176,6 @@ fn fetch(api_token: String) -> Result<Value> {
         // probably a better way around this than cloning but I don't know it ATM!
         Some(data) => Ok(data.clone()),
         None => bail!("there was no data in the response"),
-    }
-}
-
-#[derive(Debug, PartialEq)]
-enum Status {
-    Error,
-    Expected,
-    Failure,
-    Pending,
-    Success,
-}
-
-impl FromStr for Status {
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> Result<Self> {
-        match s {
-            "ERROR" => Ok(Self::Error),
-            "EXPECTED" => Ok(Self::Expected),
-            "FAILURE" => Ok(Self::Failure),
-            "PENDING" => Ok(Self::Pending),
-            "SUCCESS" => Ok(Self::Success),
-            _ => bail!("got unexpected value {} as a Status", s),
-        }
-    }
-}
-
-impl TryFrom<&Value> for Status {
-    type Error = anyhow::Error;
-
-    fn try_from(v: &Value) -> Result<Self> {
-        Self::from_str(
-            v.as_str()
-                .ok_or_else(|| anyhow!("value passed to Status was not a string"))?,
-        )
     }
 }
 
