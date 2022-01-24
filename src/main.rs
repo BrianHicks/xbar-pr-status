@@ -1,8 +1,9 @@
-use anyhow::{Context, Result};
+use anyhow::{anyhow, bail, Context, Result};
 use clap::Parser;
-use graphql_client::{GraphQLQuery, Response};
 use reqwest::blocking::Client;
 use reqwest::header;
+use serde_json::{json, Value};
+use std::str::FromStr;
 
 #[derive(Debug, Parser)]
 #[clap(about, author)]
@@ -52,76 +53,178 @@ fn main() {
 fn try_main() -> Result<()> {
     let config = Config::parse();
 
-    let prs =
-        PullRequests::fetch(config.github_api_token).context("could not fetch pull requests")?;
+    // anyhow::bail!("x");
+
+    let prs = fetch(config.github_api_token).context("could not fetch pull requests")?;
 
     let top_line: Vec<String> = Vec::new();
     let menu_lines: Vec<String> = Vec::new();
 
-    for pr_opt in prs.viewer.pull_requests.nodes.unwrap_or_else(|| Vec::new()) {
-        let pr = pr_opt.context("got a null PR")?;
-        let commits = pr.commits.nodes.context("got a null list of commits")?;
-        let commit = match commits.get(0) {
-            Some(Some(node)) => &node.commit,
-            Some(None) => anyhow::bail!("got a null commit"),
-            None => anyhow::bail!("got a null list of commits"),
-        };
+    for pr in prs
+        .pointer("/viewer/pullRequests/nodes")
+        .ok_or_else(|| anyhow!("could not get PRs"))?
+        .as_array()
+        .ok_or_else(|| anyhow!("/viewer/pullRequests/nodes was not an array"))?
+    {
+        // Determine the top-level status
+        let commit = pr
+            .pointer("/commits/nodes/0/commit")
+            .ok_or_else(|| anyhow!("could not get the last commit"))?;
 
-        println!("{:#?}", commit);
+        let contexts: Vec<(&str, Status)> = Vec::new();
+        for context in commit
+            .pointer("/status/contexts")
+            .and_then(|v| v.as_array())
+            .unwrap_or_else(|| &Vec::new())
+        {
+            println!("{:#?}", context);
+        }
+        // let contexts: Result<Vec<(&str, &str)>> = commit
+        //     .pointer("/status/contexts")
+        //     .and_then(|v| v.as_array())
+        //     .map(|a| {
+        //         a.iter()
+        //             .flat_map(|context| {
+        //                 Ok((
+        //                     context
+        //                         .get("context")
+        //                         .ok_or_else(|| anyhow!("context was null"))?
+        //                         .as_str()
+        //                         .ok_or_else(|| anyhow!("context was not a string"))?,
+        //                     context
+        //                         .get("state")
+        //                         .ok_or_else(|| anyhow!("state was null"))?
+        //                         .try_into()?,
+        //                 ))
+        //             })
+        //             .collect::<Vec<(&str, Status)>>()
+        //     });
+
+        let overall: Option<&str> = commit
+            .pointer("/statusCheckRollup/state")
+            .and_then(|state| state.as_str());
+
+        println!("{:#?}", contexts);
+        println!("{:#?}", overall);
     }
+
+    // for pr_opt in prs.viewer.pull_requests.nodes.unwrap_or_else(|| Vec::new()) {
+    //     let pr = pr_opt.context("got a null PR")?;
+
+    // Determine the top-level status
+    // let commits = pr.commits.nodes.context("got a null list of commits")?;
+    // let commit = match commits.get(0) {
+    //     Some(Some(node)) => &node.commit,
+    //     Some(None) => anyhow::bail!("got a null commit"),
+    //     None => anyhow::bail!("got a null list of commits"),
+    // };
+
+    // let rollup = commit
+    //     .status_check_rollup
+    //     .map(|rollup| rollup.state)
+    //     .unwrap_or()
+    //     // .as_ref()
+    //     // .map(|rollup| match rollup.state {
+    //     //     pull_requests::StatusState::EXPECTED => 1,
+    //     //     pull_requests::StatusState::ERROR => 0,
+    //     // });
+    //     ;
+
+    // println!("{:#?}", is_approved(&pr));
+    // }
 
     Ok(())
 }
 
-type URI = String;
+fn fetch(api_token: String) -> Result<Value> {
+    let client = Client::builder()
+        .user_agent(concat!(
+            env!("CARGO_PKG_NAME"),
+            "/",
+            env!("CARGO_PKG_VERSION")
+        ))
+        .build()
+        .context("could not build the HTTP client")?;
 
-type DateTime = String;
+    let response = client
+        .post("https://api.github.com/graphql")
+        .header(
+            header::AUTHORIZATION,
+            header::HeaderValue::from_str(&format!("Bearer {}", api_token))
+                .context("could not create an Authorization header from the specified token")?,
+        )
+        .json(&json!({ "query": include_str!("pull_requests.graphql") }))
+        .send()
+        .context("could not request data from GitHub's API")?;
 
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "src/github.schema.graphql",
-    query_path = "src/pull_requests.graphql",
-    response_derives = "Debug"
-)]
-struct PullRequests;
+    let body: Value = response.json().context("could not read JSON body")?;
 
-impl PullRequests {
-    fn fetch(api_token: String) -> Result<pull_requests::ResponseData> {
-        let query = Self::build_query(pull_requests::Variables {});
-
-        let client = Client::builder()
-            .user_agent(concat!(
-                env!("CARGO_PKG_NAME"),
-                "/",
-                env!("CARGO_PKG_VERSION")
-            ))
-            .build()
-            .context("could not build the HTTP client")?;
-
-        let response = client
-            .post("https://api.github.com/graphql")
-            .header(
-                header::AUTHORIZATION,
-                header::HeaderValue::from_str(&format!("Bearer {}", api_token))
-                    .context("could not create an Authorization header from the specified token")?,
-            )
-            .json(&query)
-            .send()
-            .context("could not request data from GitHub's API")?;
-
-        let data: Response<pull_requests::ResponseData> = response
-            .json()
-            .context("could not deserialize pull requests from response")?;
-
-        if let Some(errs) = data.errors {
-            for err in errs {
-                log::error!("{}", err)
+    if let Some(value) = body.pointer("errors") {
+        match value {
+            Value::Null => (),
+            Value::Array(errs) => {
+                for err in errs {
+                    log::error!("{}", err);
+                }
             }
+            _ => bail!("errors was not an array"),
         }
+    }
 
-        match data.data {
-            Some(data) => Ok(data),
-            None => anyhow::bail!("there was no data in the response"),
+    match body.get("data") {
+        // probably a better way around this than cloning but I don't know it ATM!
+        Some(data) => Ok(data.clone()),
+        None => bail!("there was no data in the response"),
+    }
+}
+
+#[derive(Debug, PartialEq)]
+enum Status {
+    Error,
+    Expected,
+    Failure,
+    Pending,
+    Success,
+}
+
+impl FromStr for Status {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        match s {
+            "ERROR" => Ok(Self::Error),
+            "EXPECTED" => Ok(Self::Expected),
+            "FAILURE" => Ok(Self::Failure),
+            "PENDING" => Ok(Self::Pending),
+            "SUCCESS" => Ok(Self::Success),
+            _ => bail!("got unexpected value {} as a Status", s),
         }
     }
 }
+
+impl TryFrom<&Value> for Status {
+    type Error = anyhow::Error;
+
+    fn try_from(v: &Value) -> Result<Self> {
+        Self::from_str(
+            v.as_str()
+                .ok_or_else(|| anyhow!("value passed to Status was not a string"))?,
+        )
+    }
+}
+
+// fn is_approved(pr: &pull_requests::PullRequestsViewerPullRequestsNodes) -> Result<bool> {
+//     let latest = pr
+//         .latest_opinionated_reviews
+//         .context("latest opinionated reviews was null")?;
+
+//     let reviews = latest
+//         .nodes
+//         .context("latest_opinionated_reviews.nodes was null")?;
+
+//     match reviews.get(0) {
+//         Some(Some(review)) => Ok(review.state == pull_requests::PullRequestReviewState::APPROVED),
+//         Some(None) => anyhow::bail!("the first review was null"),
+//         None => Ok(false), // no reviews (yet!)
+//     }
+// }
