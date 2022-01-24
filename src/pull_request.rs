@@ -9,6 +9,7 @@ pub struct PullRequest {
     title: String,
     url: String,
     updated_at: DateTime<FixedOffset>,
+    approved: bool,
     overall_status: Option<CheckStatus>,
     checks: Vec<Check>,
 }
@@ -53,6 +54,16 @@ impl PullRequest {
 
         Ok(out)
     }
+
+    fn approved_from_pr(pr: &Value) -> Result<bool> {
+        match pr.pointer("/latestOpinionatedReviews/nodes/0/state") {
+            Some(state) => Ok(state
+                .as_str()
+                .ok_or_else(|| anyhow!("approval state was not a string"))?
+                == "APPROVED"),
+            None => Ok(false),
+        }
+    }
 }
 
 impl TryFrom<&Value> for PullRequest {
@@ -68,6 +79,7 @@ impl TryFrom<&Value> for PullRequest {
             url: pr.get_str("/url")?.into(),
             updated_at: DateTime::parse_from_rfc3339(pr.get_str("/updatedAt")?)
                 .context("updatedAt doesn't match the RFC3339 format")?,
+            approved: Self::approved_from_pr(pr)?,
             overall_status: Self::overall_status_from_commit(commit)?,
             checks: Self::checks_from_commit(commit)?,
         })
@@ -134,6 +146,11 @@ mod tests {
         }
 
         #[test]
+        fn approved() {
+            assert_eq!(true, fixture().approved)
+        }
+
+        #[test]
         fn overall_status() {
             assert_eq!(Some(CheckStatus::Success), fixture().overall_status)
         }
@@ -184,6 +201,11 @@ mod tests {
         }
 
         #[test]
+        fn approved() {
+            assert_eq!(false, fixture().approved)
+        }
+
+        #[test]
         fn overall_status() {
             assert_eq!(Some(CheckStatus::Failure), fixture().overall_status)
         }
@@ -229,6 +251,11 @@ mod tests {
         }
 
         #[test]
+        fn approved() {
+            assert_eq!(true, fixture().approved)
+        }
+
+        #[test]
         fn overall_status() {
             assert_eq!(Some(CheckStatus::Failure), fixture().overall_status)
         }
@@ -271,6 +298,11 @@ mod tests {
                 "https://github.com/org/repo/pull/1".to_string(),
                 fixture().url
             )
+        }
+
+        #[test]
+        fn approved() {
+            assert_eq!(false, fixture().approved)
         }
 
         #[test]
