@@ -1,0 +1,53 @@
+{
+  "title": "Title",
+  "url": "https://github.com/org/repo/pull/1",
+  "updatedAt": "2022-01-18T18:17:30Z",
+  "commits": {
+    "nodes": [
+      {
+        "commit": {
+          "status": {
+            "contexts": [
+              {
+                "context": "Status 1",
+                "state": "SUCCESS",
+                "targetUrl": "https://url"
+              },
+              {
+                "context": "Status 2",
+                "state": "SUCCESS",
+                "targetUrl": "https://url"
+              }
+            ]
+          },
+          "checkSuites": {
+            "nodes": [
+              {
+                "checkRuns": {
+                  "nodes": [
+                    {
+                      "title": "Check 1",
+                      "url": "https://github.com/org/repo/runs/1",
+                      "conclusion": "SUCCESS"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "statusCheckRollup": {
+            "state": "SUCCESS"
+          }
+        }
+      }
+    ]
+  },
+  "autoMergeRequest": null,
+  "latestOpinionatedReviews": {
+    "nodes": [
+      {
+        "state": "APPROVED"
+      }
+    ]
+  }
+}

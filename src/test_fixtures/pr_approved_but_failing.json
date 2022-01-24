@@ -1,0 +1,45 @@
+{
+  "title": "Title",
+  "url": "https://github.com/org/repo/pull/1",
+  "updatedAt": "2021-10-27T13:11:33Z",
+  "commits": {
+    "nodes": [
+      {
+        "commit": {
+          "status": null,
+          "checkSuites": {
+            "nodes": [
+              {
+                "checkRuns": {
+                  "nodes": [
+                    {
+                      "title": "Check 1",
+                      "url": "https://github.com/org/repo/runs/1",
+                      "conclusion": "FAILURE"
+                    },
+                    {
+                      "title": "Check 2",
+                      "url": "https://github.com/org/repo/runs/2",
+                      "conclusion": "FAILURE"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "statusCheckRollup": {
+            "state": "FAILURE"
+          }
+        }
+      }
+    ]
+  },
+  "autoMergeRequest": null,
+  "latestOpinionatedReviews": {
+    "nodes": [
+      {
+        "state": "APPROVED"
+      }
+    ]
+  }
+}
