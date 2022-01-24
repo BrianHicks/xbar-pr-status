@@ -53,47 +53,46 @@ mod tests {
 
         #[test]
         fn overall_status() {
-            assert_eq!(Some(CheckStatus::Success), fixture().overall_status,)
+            assert_eq!(Some(CheckStatus::Success), fixture().overall_status)
         }
     }
 
     mod failing {
         use super::*;
 
-        fn fixture() -> Value {
-            serde_json::from_str(include_str!("test_fixtures/pr_failing.json")).unwrap()
+        fn fixture() -> PullRequest {
+            load(include_str!("test_fixtures/pr_failing.json"))
         }
 
         #[test]
-        fn loads() {
-            PullRequest::try_from(&fixture()).unwrap();
+        fn overall_status() {
+            assert_eq!(Some(CheckStatus::Failure), fixture().overall_status)
         }
     }
 
     mod approved_but_failing {
         use super::*;
 
-        fn fixture() -> Value {
-            serde_json::from_str(include_str!("test_fixtures/pr_approved_but_failing.json"))
-                .unwrap()
+        fn fixture() -> PullRequest {
+            load(include_str!("test_fixtures/pr_approved_but_failing.json"))
         }
 
         #[test]
-        fn loads() {
-            PullRequest::try_from(&fixture()).unwrap();
+        fn overall_status() {
+            assert_eq!(Some(CheckStatus::Failure), fixture().overall_status)
         }
     }
 
     mod no_checks {
         use super::*;
 
-        fn fixture() -> Value {
-            serde_json::from_str(include_str!("test_fixtures/pr_no_checks.json")).unwrap()
+        fn fixture() -> PullRequest {
+            load(include_str!("test_fixtures/pr_no_checks.json"))
         }
 
         #[test]
-        fn loads() {
-            PullRequest::try_from(&fixture()).unwrap();
+        fn overall_status() {
+            assert_eq!(None, fixture().overall_status)
         }
     }
 }
