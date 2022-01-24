@@ -183,6 +183,25 @@ mod tests {
         fn overall_status() {
             assert_eq!(Some(CheckStatus::Failure), fixture().overall_status)
         }
+
+        #[test]
+        fn checks() {
+            assert_eq!(
+                vec![
+                    Check {
+                        title: "Check 1".into(),
+                        status: CheckStatus::Failure,
+                        url: "https://github.com/org/repo/runs/1".into()
+                    },
+                    Check {
+                        title: "Check 2".into(),
+                        status: CheckStatus::Cancelled,
+                        url: "https://github.com/org/repo/runs/2".into()
+                    },
+                ],
+                fixture().checks
+            )
+        }
     }
 
     mod approved_but_failing {
@@ -196,6 +215,25 @@ mod tests {
         fn overall_status() {
             assert_eq!(Some(CheckStatus::Failure), fixture().overall_status)
         }
+
+        #[test]
+        fn checks() {
+            assert_eq!(
+                vec![
+                    Check {
+                        title: "Check 1".into(),
+                        status: CheckStatus::Failure,
+                        url: "https://github.com/org/repo/runs/1".into()
+                    },
+                    Check {
+                        title: "Check 2".into(),
+                        status: CheckStatus::Failure,
+                        url: "https://github.com/org/repo/runs/2".into()
+                    },
+                ],
+                fixture().checks
+            )
+        }
     }
 
     mod no_checks {
@@ -208,6 +246,12 @@ mod tests {
         #[test]
         fn overall_status() {
             assert_eq!(None, fixture().overall_status)
+        }
+
+        #[test]
+        fn checks() {
+            let empty: Vec<Check> = Vec::new();
+            assert_eq!(empty, fixture().checks)
         }
     }
 }
