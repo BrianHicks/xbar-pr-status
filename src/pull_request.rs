@@ -4,6 +4,7 @@ use serde_json::Value;
 
 #[derive(Debug)]
 pub struct PullRequest {
+    title: String,
     overall_status: Option<CheckStatus>,
     checks: Vec<Check>,
 }
@@ -68,6 +69,12 @@ impl TryFrom<&Value> for PullRequest {
             .ok_or_else(|| anyhow!("could not get the last commit"))?;
 
         Ok(PullRequest {
+            title: pr
+                .get("title")
+                .ok_or_else(|| anyhow!("could not get title"))?
+                .as_str()
+                .ok_or_else(|| anyhow!("title was not a string"))?
+                .into(),
             overall_status: Self::overall_status_from_commit(commit)?,
             checks: Self::checks_from_commit(commit)?,
         })
@@ -143,6 +150,11 @@ mod tests {
         }
 
         #[test]
+        fn title() {
+            assert_eq!("Title".to_string(), fixture().title)
+        }
+
+        #[test]
         fn overall_status() {
             assert_eq!(Some(CheckStatus::Success), fixture().overall_status)
         }
@@ -180,6 +192,11 @@ mod tests {
         }
 
         #[test]
+        fn title() {
+            assert_eq!("Title".to_string(), fixture().title)
+        }
+
+        #[test]
         fn overall_status() {
             assert_eq!(Some(CheckStatus::Failure), fixture().overall_status)
         }
@@ -212,6 +229,11 @@ mod tests {
         }
 
         #[test]
+        fn title() {
+            assert_eq!("Title".to_string(), fixture().title)
+        }
+
+        #[test]
         fn overall_status() {
             assert_eq!(Some(CheckStatus::Failure), fixture().overall_status)
         }
@@ -241,6 +263,11 @@ mod tests {
 
         fn fixture() -> PullRequest {
             load(include_str!("test_fixtures/pr_no_checks.json"))
+        }
+
+        #[test]
+        fn title() {
+            assert_eq!("Title".to_string(), fixture().title)
         }
 
         #[test]
