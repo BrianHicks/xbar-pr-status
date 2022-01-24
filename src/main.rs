@@ -3,6 +3,8 @@ mod navigate_value;
 mod pull_request;
 mod xbar;
 
+use crate::navigate_value::NavigateValue;
+use crate::pull_request::PullRequest;
 use anyhow::{bail, Context, Result};
 use clap::Parser;
 use reqwest::blocking::Client;
@@ -11,7 +13,7 @@ use serde_json::{json, Value};
 
 #[derive(Debug, Parser)]
 #[clap(about, author)]
-struct Config {
+pub struct Config {
     // TODO: document scopes
     #[clap(env = "GITHUB_API_TOKEN")]
     github_api_token: String,
@@ -21,8 +23,8 @@ struct Config {
     success_and_approved_emoji: String,
 
     /// Emoji to use when CI is passing but the PR is not yet approved
-    #[clap(long, env = "SUCCESS_AWAITING_APPROVAL_EMOJI", default_value = "🌕")]
-    success_awaiting_approval_emoji: String,
+    #[clap(long, env = "SUCCESS_EMOJI", default_value = "🌕")]
+    success_emoji: String,
 
     /// Emoji to use when we're waiting to hear back from CI
     #[clap(long, env = "PENDING_EMOJI", default_value = "🌓")]
@@ -61,91 +63,29 @@ fn main() {
 fn try_main() -> Result<()> {
     let config = Config::parse();
 
-    // anyhow::bail!("x");
+    let prs = fetch(&config.github_api_token).context("could not fetch pull requests")?;
 
-    let prs = fetch(config.github_api_token).context("could not fetch pull requests")?;
-    println!("{:#?}", prs);
+    let mut top_line: Vec<&str> = Vec::new();
+    let mut menu_lines: Vec<String> = Vec::new();
 
-    // let top_line: Vec<String> = Vec::new();
-    // let menu_lines: Vec<String> = Vec::new();
+    for pr_value in prs.get_array("/data/viewer/pullRequests/nodes")? {
+        let pr = match PullRequest::try_from(pr_value).context("could not load a Pull Request") {
+            Ok(pr) => pr,
+            Err(err) => {
+                log::debug!("{:#?}", pr_value);
+                return Err(err).context("could not load a Pull Request");
+            }
+        };
+        top_line.push(config.emoji_for(pr.status()));
+        menu_lines.push(pr.to_xbar_menu(&config));
+    }
 
-    // for pr in prs
-    //     .pointer("/viewer/pullRequests/nodes")
-    //     .ok_or_else(|| anyhow!("could not get PRs"))?
-    //     .as_array()
-    //     .ok_or_else(|| anyhow!("/viewer/pullRequests/nodes was not an array"))?
-    // {
-    //     // Determine the top-level status
-    //     let commit = pr
-    //         .pointer("/commits/nodes/0/commit")
-    //         .ok_or_else(|| anyhow!("could not get the last commit"))?;
-
-    //     let contexts: Vec<(&str, Status)> = Vec::new();
-    //     for context in commit
-    //         .pointer("/status/contexts")
-    //         .and_then(|v| v.as_array())
-    //         .unwrap_or_else(|| &Vec::new())
-    //     {
-    //         println!("{:#?}", context);
-    //     }
-    //     // let contexts: Result<Vec<(&str, &str)>> = commit
-    //     //     .pointer("/status/contexts")
-    //     //     .and_then(|v| v.as_array())
-    //     //     .map(|a| {
-    //     //         a.iter()
-    //     //             .flat_map(|context| {
-    //     //                 Ok((
-    //     //                     context
-    //     //                         .get("context")
-    //     //                         .ok_or_else(|| anyhow!("context was null"))?
-    //     //                         .as_str()
-    //     //                         .ok_or_else(|| anyhow!("context was not a string"))?,
-    //     //                     context
-    //     //                         .get("state")
-    //     //                         .ok_or_else(|| anyhow!("state was null"))?
-    //     //                         .try_into()?,
-    //     //                 ))
-    //     //             })
-    //     //             .collect::<Vec<(&str, Status)>>()
-    //     //     });
-
-    //     let overall: Option<&str> = commit
-    //         .pointer("/statusCheckRollup/state")
-    //         .and_then(|state| state.as_str());
-
-    //     println!("{:#?}", contexts);
-    //     println!("{:#?}", overall);
-    // }
-
-    // // for pr_opt in prs.viewer.pull_requests.nodes.unwrap_or_else(|| Vec::new()) {
-    // //     let pr = pr_opt.context("got a null PR")?;
-
-    // // Determine the top-level status
-    // // let commits = pr.commits.nodes.context("got a null list of commits")?;
-    // // let commit = match commits.get(0) {
-    // //     Some(Some(node)) => &node.commit,
-    // //     Some(None) => anyhow::bail!("got a null commit"),
-    // //     None => anyhow::bail!("got a null list of commits"),
-    // // };
-
-    // // let rollup = commit
-    // //     .status_check_rollup
-    // //     .map(|rollup| rollup.state)
-    // //     .unwrap_or()
-    // //     // .as_ref()
-    // //     // .map(|rollup| match rollup.state {
-    // //     //     pull_requests::StatusState::EXPECTED => 1,
-    // //     //     pull_requests::StatusState::ERROR => 0,
-    // //     // });
-    // //     ;
-
-    // // println!("{:#?}", is_approved(&pr));
-    // // }
+    print!("{}\n---\n{}\n", top_line.join(""), menu_lines.join("\n"));
 
     Ok(())
 }
 
-fn fetch(api_token: String) -> Result<Value> {
+fn fetch(api_token: &str) -> Result<Value> {
     let client = Client::builder()
         .user_agent(concat!(
             env!("CARGO_PKG_NAME"),
@@ -180,25 +120,20 @@ fn fetch(api_token: String) -> Result<Value> {
         }
     }
 
-    match body.get("data") {
-        // probably a better way around this than cloning but I don't know it ATM!
-        Some(data) => Ok(data.clone()),
-        None => bail!("there was no data in the response"),
-    }
+    Ok(body)
 }
 
-// fn is_approved(pr: &pull_requests::PullRequestsViewerPullRequestsNodes) -> Result<bool> {
-//     let latest = pr
-//         .latest_opinionated_reviews
-//         .context("latest opinionated reviews was null")?;
-
-//     let reviews = latest
-//         .nodes
-//         .context("latest_opinionated_reviews.nodes was null")?;
-
-//     match reviews.get(0) {
-//         Some(Some(review)) => Ok(review.state == pull_requests::PullRequestReviewState::APPROVED),
-//         Some(None) => anyhow::bail!("the first review was null"),
-//         None => Ok(false), // no reviews (yet!)
-//     }
-// }
+impl Config {
+    pub fn emoji_for(&self, status: xbar::Status) -> &str {
+        match status {
+            xbar::Status::SuccessAndApproved => &self.success_and_approved_emoji,
+            xbar::Status::Success => &self.success_emoji,
+            xbar::Status::Pending => &self.pending_emoji,
+            xbar::Status::Failure => &self.failure_emoji,
+            xbar::Status::Unknown => &self.unknown_emoji,
+            xbar::Status::NeedsAttention => &self.needs_attention_emoji,
+            xbar::Status::Error => &self.error_emoji,
+            xbar::Status::Queued => &self.queued_emoji,
+        }
+    }
+}

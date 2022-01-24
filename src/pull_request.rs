@@ -1,6 +1,7 @@
 use crate::check_status::CheckStatus;
 use crate::navigate_value::NavigateValue;
 use crate::xbar;
+use crate::Config;
 use anyhow::{anyhow, Context, Result};
 use chrono::{DateTime, FixedOffset};
 use serde_json::Value;
@@ -74,7 +75,7 @@ impl PullRequest {
             .is_null())
     }
 
-    fn status(&self) -> xbar::Status {
+    pub fn status(&self) -> xbar::Status {
         match &self.overall_status {
             None => xbar::Status::Unknown,
             Some(CheckStatus::Success) => {
@@ -88,6 +89,27 @@ impl PullRequest {
             }
             Some(other) => other.into(),
         }
+    }
+
+    pub fn to_xbar_menu(&self, config: &Config) -> String {
+        let mut out_lines: Vec<String> = Vec::new();
+        out_lines.push(format!(
+            "{} {} | url={}",
+            config.emoji_for(self.status()),
+            self.title.replace("|", "\\|"),
+            self.url
+        ));
+
+        for check in &self.checks {
+            out_lines.push(format!(
+                "-- {} {} | url={}",
+                config.emoji_for(xbar::Status::from(&check.status)),
+                check.name.replace("|", "\\|"),
+                check.url,
+            ))
+        }
+
+        out_lines.join("\n")
     }
 }
 
