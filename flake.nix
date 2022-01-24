@@ -19,8 +19,12 @@
         # `nix build`
         packages.xbar-pr-status = naersk-lib.buildPackage {
           root = ./.;
-          buildInputs = [ pkgs.libiconv pkgs.openssl pkgs.rustPackages.clippy ]
-            ++ darwinInputs;
+          buildInputs = [
+            pkgs.libiconv
+            pkgs.openssl
+            pkgs.pkg-config
+            pkgs.rustPackages.clippy
+          ] ++ darwinInputs;
 
           doCheck = true;
           checkPhase = ''
