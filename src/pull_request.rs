@@ -1,5 +1,6 @@
 use crate::check_status::CheckStatus;
 use crate::navigate_value::NavigateValue;
+use crate::xbar;
 use anyhow::{anyhow, Context, Result};
 use chrono::{DateTime, FixedOffset};
 use serde_json::Value;
@@ -71,6 +72,22 @@ impl PullRequest {
             .get("autoMergeRequest")
             .ok_or_else(|| anyhow!("autoMergeRequest was missing"))?
             .is_null())
+    }
+
+    fn status(&self) -> xbar::Status {
+        match &self.overall_status {
+            None => xbar::Status::Unknown,
+            Some(CheckStatus::Success) => {
+                if self.queued {
+                    xbar::Status::Queued
+                } else if self.approved {
+                    xbar::Status::SuccessAndApproved
+                } else {
+                    xbar::Status::Success
+                }
+            }
+            Some(other) => other.into(),
+        }
     }
 }
 
@@ -192,6 +209,11 @@ mod tests {
                 fixture().checks
             )
         }
+
+        #[test]
+        fn status() {
+            assert_eq!(xbar::Status::SuccessAndApproved, fixture().status())
+        }
     }
 
     mod failing {
@@ -246,6 +268,11 @@ mod tests {
                 ],
                 fixture().checks
             )
+        }
+
+        #[test]
+        fn status() {
+            assert_eq!(xbar::Status::Failure, fixture().status())
         }
     }
 
@@ -302,6 +329,11 @@ mod tests {
                 fixture().checks
             )
         }
+
+        #[test]
+        fn status() {
+            assert_eq!(xbar::Status::Failure, fixture().status())
+        }
     }
 
     mod no_checks {
@@ -343,6 +375,11 @@ mod tests {
         fn checks() {
             let empty: Vec<Check> = Vec::new();
             assert_eq!(empty, fixture().checks)
+        }
+
+        #[test]
+        fn status() {
+            assert_eq!(xbar::Status::Unknown, fixture().status())
         }
     }
 }

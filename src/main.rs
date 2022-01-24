@@ -1,6 +1,7 @@
 mod check_status;
 mod navigate_value;
 mod pull_request;
+mod xbar;
 
 use anyhow::{bail, Context, Result};
 use clap::Parser;
@@ -38,6 +39,10 @@ struct Config {
     /// Emoji to use when CI reports an error
     #[clap(long, env = "ERROR_EMOJI", default_value = "💥")]
     error_emoji: String,
+
+    /// Emoji to use when CI needs attention
+    #[clap(long, env = "NEEDS_ATTENTION_EMOJI", default_value = "❗️")]
+    needs_attention_emoji: String,
 
     /// Emoji to use when the PR enters the merge queue
     #[clap(long, env = "QUEUED_EMOJI", default_value = "✨")]
