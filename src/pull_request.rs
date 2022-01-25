@@ -1,7 +1,6 @@
 use crate::check_status::CheckStatus;
 use crate::navigate_value::NavigateValue;
 use crate::xbar;
-use crate::Config;
 use anyhow::{anyhow, bail, Context, Result};
 use chrono::{DateTime, FixedOffset};
 use serde_json::Value;
@@ -91,11 +90,11 @@ impl PullRequest {
         }
     }
 
-    pub fn to_xbar_menu(&self, config: &Config) -> String {
+    pub fn to_xbar_menu(&self, emoji: &xbar::Emoji) -> String {
         let mut out_lines: Vec<String> = Vec::new();
         out_lines.push(format!(
             "{} {} | href={}",
-            config.emoji_for(self.status()),
+            emoji.for_status(self.status()),
             self.title.replace("|", "\\|"),
             self.url
         ));
@@ -103,7 +102,7 @@ impl PullRequest {
         for check in &self.checks {
             out_lines.push(format!(
                 "-- {} {} | href={}",
-                config.emoji_for(xbar::Status::from(&check.status)),
+                emoji.for_status(xbar::Status::from(&check.status)),
                 check.name.replace("|", "\\|"),
                 check.url,
             ))
