@@ -15,7 +15,9 @@ use serde_json::{json, Value};
 #[derive(Debug, Parser)]
 #[clap(about, author)]
 pub struct Config {
-    // TODO: document scopes
+    /// A GitHub access token, created with the `repo` and `read:user` scopes.
+    ///
+    /// You can make one of these st https://github.com/settings/tokens
     #[clap(env = "GITHUB_API_TOKEN")]
     github_api_token: String,
 
