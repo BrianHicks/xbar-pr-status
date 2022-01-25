@@ -19,41 +19,12 @@ pub struct Config {
     #[clap(env = "GITHUB_API_TOKEN")]
     github_api_token: String,
 
-    /// Emoji to use when CI is passing and the PR is approved
-    #[clap(long, env = "SUCCESS_AND_APPROVED_EMOJI", default_value = "🌝")]
-    success_and_approved_emoji: String,
-
-    /// Emoji to use when CI is passing but the PR is not yet approved
-    #[clap(long, env = "SUCCESS_EMOJI", default_value = "🌕")]
-    success_emoji: String,
-
-    /// Emoji to use when we're waiting to hear back from CI
-    #[clap(long, env = "PENDING_EMOJI", default_value = "🌓")]
-    pending_emoji: String,
-
-    /// Emoji to use when CI fails
-    #[clap(long, env = "FAILURE_EMOJI", default_value = "🌑")]
-    failure_emoji: String,
-
-    /// Emoji to use when there are no configured CI checks
-    #[clap(long, env = "UNKNOWN_EMOJI", default_value = "🌔")]
-    unknown_emoji: String,
-
-    /// Emoji to use when CI reports an error
-    #[clap(long, env = "ERROR_EMOJI", default_value = "💥")]
-    error_emoji: String,
-
-    /// Emoji to use when CI needs attention
-    #[clap(long, env = "NEEDS_ATTENTION_EMOJI", default_value = "❗️")]
-    needs_attention_emoji: String,
-
-    /// Emoji to use when the PR enters the merge queue
-    #[clap(long, env = "QUEUED_EMOJI", default_value = "✨")]
-    queued_emoji: String,
-
     /// Ignore PRs updated last before this many days ago
     #[clap(long, env = "SINCE")]
     since: Option<i64>,
+
+    #[clap(flatten)]
+    emoji: xbar::Emoji,
 }
 
 fn main() {
@@ -87,8 +58,8 @@ fn try_main() -> Result<()> {
             continue;
         }
 
-        top_line.push(config.emoji_for(pr.status()));
-        menu_lines.push(pr.to_xbar_menu(&config));
+        top_line.push(config.emoji.for_status(pr.status()));
+        menu_lines.push(pr.to_xbar_menu(&config.emoji));
     }
 
     print!("{}\n---\n{}\n", top_line.join(""), menu_lines.join("\n"));
@@ -132,19 +103,4 @@ fn fetch(api_token: &str) -> Result<Value> {
     }
 
     Ok(body)
-}
-
-impl Config {
-    pub fn emoji_for(&self, status: xbar::Status) -> &str {
-        match status {
-            xbar::Status::SuccessAndApproved => &self.success_and_approved_emoji,
-            xbar::Status::Success => &self.success_emoji,
-            xbar::Status::Pending => &self.pending_emoji,
-            xbar::Status::Failure => &self.failure_emoji,
-            xbar::Status::Unknown => &self.unknown_emoji,
-            xbar::Status::NeedsAttention => &self.needs_attention_emoji,
-            xbar::Status::Error => &self.error_emoji,
-            xbar::Status::Queued => &self.queued_emoji,
-        }
-    }
 }
