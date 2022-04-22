@@ -95,7 +95,7 @@ impl PullRequest {
         out_lines.push(format!(
             "{} {} | href={}",
             emoji.for_status(self.status()),
-            self.title.replace("|", "\\|"),
+            self.title.replace('|', "\\|"),
             self.url
         ));
 
@@ -103,7 +103,7 @@ impl PullRequest {
             out_lines.push(format!(
                 "-- {} {} | href={}",
                 emoji.for_status(xbar::Status::from(&check.status)),
-                check.name.replace("|", "\\|"),
+                check.name.replace('|', "\\|"),
                 check.url,
             ))
         }
@@ -199,12 +199,12 @@ mod tests {
 
         #[test]
         fn approved() {
-            assert_eq!(true, fixture().approved)
+            assert!(fixture().approved)
         }
 
         #[test]
         fn queued() {
-            assert_eq!(false, fixture().queued)
+            assert!(!fixture().queued)
         }
 
         #[test]
@@ -264,12 +264,12 @@ mod tests {
 
         #[test]
         fn approved() {
-            assert_eq!(false, fixture().approved)
+            assert!(!fixture().approved)
         }
 
         #[test]
         fn queued() {
-            assert_eq!(false, fixture().queued)
+            assert!(!fixture().queued)
         }
 
         #[test]
@@ -324,12 +324,12 @@ mod tests {
 
         #[test]
         fn approved() {
-            assert_eq!(true, fixture().approved)
+            assert!(fixture().approved)
         }
 
         #[test]
         fn queued() {
-            assert_eq!(false, fixture().queued)
+            assert!(!fixture().queued)
         }
 
         #[test]
@@ -384,12 +384,12 @@ mod tests {
 
         #[test]
         fn approved() {
-            assert_eq!(false, fixture().approved)
+            assert!(!fixture().approved)
         }
 
         #[test]
         fn queued() {
-            assert_eq!(false, fixture().queued)
+            assert!(!fixture().queued)
         }
 
         #[test]
