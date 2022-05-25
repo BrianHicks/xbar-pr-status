@@ -99,15 +99,15 @@ impl Emoji {
 }
 
 fn parse_reviewer(s: &str) -> Result<(String, String)> {
-    let mut items = s.split("=");
+    let mut items = s.split('=');
     Ok((
         items
             .next()
-            .with_context(|| format!("I couldn't find a reviewer name in `{}`", s.to_string()))?
+            .with_context(|| format!("I couldn't find a reviewer name in `{}`", s))?
             .to_string(),
         items
             .next()
-            .with_context(|| format!("I couldn't find a reviewer emoji in `{}`", s.to_string()))?
+            .with_context(|| format!("I couldn't find a reviewer emoji in `{}`", s))?
             .to_string(),
     ))
 }
