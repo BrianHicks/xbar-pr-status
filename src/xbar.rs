@@ -1,4 +1,5 @@
 use crate::check_status::CheckStatus;
+use anyhow::{Context, Result};
 use clap::Parser;
 
 #[derive(Debug, PartialEq)]
@@ -65,6 +66,11 @@ pub struct Emoji {
     /// Emoji to use when the PR enters the merge queue
     #[clap(long, env = "QUEUED_EMOJI", default_value = "✨")]
     queued_emoji: String,
+
+    /// Emoji for a specific reviewer while waiting for review. Format is
+    /// reviewerGithubLogin=EMOJI
+    #[clap(long("reviewer-emoji"), parse(try_from_str = parse_reviewer), multiple_occurrences = true)]
+    reviewer_emojis: Vec<(String, String)>,
 }
 
 impl Emoji {
@@ -80,4 +86,18 @@ impl Emoji {
             Status::Queued => &self.queued_emoji,
         }
     }
+}
+
+fn parse_reviewer(s: &str) -> Result<(String, String)> {
+    let mut items = s.split("=");
+    Ok((
+        items
+            .next()
+            .with_context(|| format!("I couldn't find a reviewer name in `{}`", s.to_string()))?
+            .to_string(),
+        items
+            .next()
+            .with_context(|| format!("I couldn't find a reviewer emoji in `{}`", s.to_string()))?
+            .to_string(),
+    ))
 }
