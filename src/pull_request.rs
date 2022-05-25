@@ -83,6 +83,8 @@ impl PullRequest {
                     xbar::Status::Queued
                 } else if self.approved {
                     xbar::Status::SuccessAndApproved
+                } else if let Some(reviewer) = &self.reviewer {
+                    xbar::Status::SuccessAwaitingApproval(reviewer.to_string())
                 } else {
                     xbar::Status::Success
                 }
