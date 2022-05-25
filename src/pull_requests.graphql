@@ -35,6 +35,15 @@ query PullRequests {
         autoMergeRequest {
           enabledAt
         }
+        reviewRequests(last: 1) {
+          nodes {
+            requestedReviewer {
+              ... on User {
+                login
+              }
+            }
+          }
+        }
         latestOpinionatedReviews(last: 1) {
           nodes {
             state
