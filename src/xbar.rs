@@ -5,6 +5,7 @@ use clap::Parser;
 #[derive(Debug, PartialEq)]
 pub enum Status {
     SuccessAndApproved,
+    SuccessAwaitingApproval(String),
     Success,
     Pending,
     Failure,
@@ -71,12 +72,21 @@ pub struct Emoji {
     /// reviewerGithubLogin=EMOJI
     #[clap(long("reviewer-emoji"), parse(try_from_str = parse_reviewer), multiple_occurrences = true)]
     reviewer_emojis: Vec<(String, String)>,
+
+    #[clap(long, env = "DEFAULT_REVIEWER_EMOJI", default_value = "🌜")]
+    default_reviewer_emoji: String,
 }
 
 impl Emoji {
     pub fn for_status(&self, status: Status) -> &str {
         match status {
             Status::SuccessAndApproved => &self.success_and_approved_emoji,
+            Status::SuccessAwaitingApproval(reviewer) => self
+                .reviewer_emojis
+                .iter()
+                .filter_map(|(name, emoji)| if name == &reviewer { Some(emoji) } else { None })
+                .next()
+                .unwrap_or(&self.default_reviewer_emoji),
             Status::Success => &self.success_emoji,
             Status::Pending => &self.pending_emoji,
             Status::Failure => &self.failure_emoji,
