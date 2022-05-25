@@ -10,6 +10,7 @@ pub struct PullRequest {
     title: String,
     url: String,
     pub updated_at: DateTime<FixedOffset>,
+    reviewer: Option<String>,
     approved: bool,
     queued: bool,
     overall_status: Option<CheckStatus>,
@@ -99,6 +100,10 @@ impl PullRequest {
             self.url
         ));
 
+        if let Some(reviewer) = &self.reviewer {
+            out_lines.push(format!("-- reviewer: {}", reviewer))
+        }
+
         for check in &self.checks {
             out_lines.push(format!(
                 "-- {} {} | href={}",
@@ -120,11 +125,17 @@ impl TryFrom<&Value> for PullRequest {
             .pointer("/commits/nodes/0/commit")
             .ok_or_else(|| anyhow!("could not get the last commit"))?;
 
+        let reviewer = match pr.get_str("/reviewRequests/nodes/0/requestedReviewer/login") {
+            Ok(reviewer) => Some(reviewer.into()),
+            Err(_) => None,
+        };
+
         Ok(PullRequest {
             title: pr.get_str("/title")?.into(),
             url: pr.get_str("/url")?.into(),
             updated_at: DateTime::parse_from_rfc3339(pr.get_str("/updatedAt")?)
                 .context("updatedAt doesn't match the RFC3339 format")?,
+            reviewer,
             approved: Self::approved_from_pr(pr)?,
             queued: Self::queued_from_pr(pr)?,
             overall_status: Self::overall_status_from_commit(commit)?,
