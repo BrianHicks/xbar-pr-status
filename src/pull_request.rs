@@ -140,7 +140,7 @@ impl TryFrom<&Value> for PullRequest {
             url: pr.get_str("/url")?.into(),
             updated_at: DateTime::parse_from_rfc3339(pr.get_str("/updatedAt")?)
                 .context("updatedAt doesn't match the RFC3339 format")?,
-            is_draft: pr.get_bool("/isDraft")?.into(),
+            is_draft: pr.get_bool("/isDraft")?,
             reviewer,
             approved: Self::approved_from_pr(pr)?,
             queued: Self::queued_from_pr(pr)?,
