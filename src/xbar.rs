@@ -6,6 +6,7 @@ use clap::Parser;
 pub enum Status {
     SuccessAndApproved,
     SuccessAwaitingApproval(String),
+    Draft,
     Success,
     Pending,
     Failure,
@@ -43,6 +44,9 @@ pub struct Emoji {
     /// Emoji to use when CI is passing but the PR is not yet approved
     #[clap(long, env = "SUCCESS_EMOJI", default_value = "🌕")]
     success_emoji: String,
+
+    #[clap(long, env = "DRAFT_EMOJI", default_value = "🚧")]
+    draft_emoji: String,
 
     /// Emoji to use when we're waiting to hear back from CI
     #[clap(long, env = "PENDING_EMOJI", default_value = "🌓")]
@@ -88,6 +92,7 @@ impl Emoji {
                 .next()
                 .unwrap_or(&self.default_reviewer_emoji),
             Status::Success => &self.success_emoji,
+            Status::Draft => &self.draft_emoji,
             Status::Pending => &self.pending_emoji,
             Status::Failure => &self.failure_emoji,
             Status::Unknown => &self.unknown_emoji,

@@ -10,6 +10,7 @@ pub struct PullRequest {
     title: String,
     url: String,
     pub updated_at: DateTime<FixedOffset>,
+    is_draft: bool,
     reviewer: Option<String>,
     approved: bool,
     queued: bool,
@@ -85,6 +86,8 @@ impl PullRequest {
                     xbar::Status::SuccessAndApproved
                 } else if let Some(reviewer) = &self.reviewer {
                     xbar::Status::SuccessAwaitingApproval(reviewer.to_string())
+                } else if self.is_draft {
+                    xbar::Status::Draft
                 } else {
                     xbar::Status::Success
                 }
@@ -137,6 +140,7 @@ impl TryFrom<&Value> for PullRequest {
             url: pr.get_str("/url")?.into(),
             updated_at: DateTime::parse_from_rfc3339(pr.get_str("/updatedAt")?)
                 .context("updatedAt doesn't match the RFC3339 format")?,
+            is_draft: pr.get_bool("/isDraft")?.into(),
             reviewer,
             approved: Self::approved_from_pr(pr)?,
             queued: Self::queued_from_pr(pr)?,

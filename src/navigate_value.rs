@@ -5,6 +5,8 @@ use serde_json::Value;
 pub trait NavigateValue {
     fn get_str(&self, pointer: &str) -> Result<&str>;
 
+    fn get_bool(&self, pointer: &str) -> Result<bool>;
+
     fn get_array(&self, pointer: &str) -> Result<&Vec<Self>>
     where
         Self: Sized;
@@ -16,6 +18,13 @@ impl NavigateValue for Value {
             .ok_or_else(|| anyhow!("could not get {}", pointer))?
             .as_str()
             .ok_or_else(|| anyhow!("{} was not a string", pointer))
+    }
+
+    fn get_bool(&self, pointer: &str) -> Result<bool> {
+        self.pointer(pointer)
+            .ok_or_else(|| anyhow!("could not get {}", pointer))?
+            .as_bool()
+            .ok_or_else(|| anyhow!("{} was not a bool", pointer))
     }
 
     fn get_array(&self, pointer: &str) -> Result<&Vec<Self>> {

@@ -5,6 +5,7 @@ query PullRequests {
         title
         url
         updatedAt
+        isDraft
         commits(last: 1) {
           nodes {
             commit {

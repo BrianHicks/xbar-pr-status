@@ -2,6 +2,7 @@
   "title": "Title",
   "url": "https://github.com/org/repo/pull/1",
   "updatedAt": "2022-01-18T18:17:30Z",
+  "isDraft": false,
   "commits": {
     "nodes": [
       {
