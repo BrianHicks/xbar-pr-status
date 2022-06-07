@@ -109,12 +109,12 @@ impl PullRequest {
         ));
 
         out_lines.push(format!(
-            "-- #{} | shell=bash param1=-c param2=\"#{} | pbcopy\"",
+            "-- #{} | shell=bash param1=-c param2=\"echo '#{}' | pbcopy\"",
             self.number, self.number
         ));
 
         out_lines.push(format!(
-            "-- {} | shell=bash param1=-c param2=\"{} | pbcopy\"",
+            "-- {} | shell=bash param1=-c param2=\"echo '{}' | pbcopy\"",
             self.head_ref, self.head_ref
         ));
 
