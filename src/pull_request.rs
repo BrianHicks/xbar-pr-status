@@ -9,6 +9,7 @@ use serde_json::Value;
 pub struct PullRequest {
     number: u64,
     title: String,
+    head_ref: String,
     url: String,
     pub updated_at: DateTime<FixedOffset>,
     is_draft: bool,
@@ -112,6 +113,11 @@ impl PullRequest {
             self.number, self.number
         ));
 
+        out_lines.push(format!(
+            "-- {} | shell=bash param1=-c param2=\"{} | pbcopy\"",
+            self.head_ref, self.head_ref
+        ));
+
         if let Some(reviewer) = &self.reviewer {
             out_lines.push(format!("-- reviewer: {}", reviewer))
         }
@@ -146,6 +152,7 @@ impl TryFrom<&Value> for PullRequest {
             number: pr.get_u64("/number")?,
             title: pr.get_str("/title")?.into(),
             url: pr.get_str("/url")?.into(),
+            head_ref: pr.get_str("/headRef/name")?.into(),
             updated_at: DateTime::parse_from_rfc3339(pr.get_str("/updatedAt")?)
                 .context("updatedAt doesn't match the RFC3339 format")?,
             is_draft: pr.get_bool("/isDraft")?,

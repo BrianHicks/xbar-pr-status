@@ -3,6 +3,9 @@ query PullRequests {
     pullRequests(last: 25, states: [OPEN]) {
       nodes {
         number
+        headRef {
+          name
+        }
         title
         url
         updatedAt

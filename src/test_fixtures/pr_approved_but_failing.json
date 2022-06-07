@@ -2,6 +2,9 @@
   "number": 1,
   "title": "Title",
   "url": "https://github.com/org/repo/pull/1",
+  "headRef": {
+    "name": "cool-topic-branch"
+  },
   "updatedAt": "2021-10-27T13:11:33Z",
   "isDraft": false,
   "commits": {
