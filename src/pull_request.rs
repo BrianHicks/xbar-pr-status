@@ -101,9 +101,8 @@ impl PullRequest {
     pub fn to_xbar_menu(&self, emoji: &xbar::Emoji) -> String {
         let mut out_lines: Vec<String> = Vec::new();
         out_lines.push(format!(
-            "{} #{} {} | href={}",
+            "{} {} | href={}",
             emoji.for_status(self.status()),
-            self.number,
             self.title.replace('|', "\\|"),
             self.url
         ));
