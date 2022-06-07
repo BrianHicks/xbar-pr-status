@@ -7,6 +7,7 @@ use serde_json::Value;
 
 #[derive(Debug)]
 pub struct PullRequest {
+    number: u64,
     title: String,
     url: String,
     pub updated_at: DateTime<FixedOffset>,
@@ -105,6 +106,11 @@ impl PullRequest {
             self.url
         ));
 
+        out_lines.push(format!(
+            "-- #{} | shell=bash param1=-c param2=\"#{} | pbcopy\"",
+            self.number, self.number
+        ));
+
         if let Some(reviewer) = &self.reviewer {
             out_lines.push(format!("-- reviewer: {}", reviewer))
         }
@@ -136,6 +142,7 @@ impl TryFrom<&Value> for PullRequest {
         };
 
         Ok(PullRequest {
+            number: pr.get_u64("/number")?,
             title: pr.get_str("/title")?.into(),
             url: pr.get_str("/url")?.into(),
             updated_at: DateTime::parse_from_rfc3339(pr.get_str("/updatedAt")?)

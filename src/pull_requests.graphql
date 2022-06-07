@@ -2,6 +2,7 @@ query PullRequests {
   viewer {
     pullRequests(last: 25, states: [OPEN]) {
       nodes {
+        number
         title
         url
         updatedAt
