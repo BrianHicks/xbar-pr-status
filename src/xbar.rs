@@ -74,7 +74,7 @@ pub struct Emoji {
 
     /// Emoji for a specific reviewer while waiting for review. Format is
     /// reviewerGithubLogin=EMOJI
-    #[clap(long("reviewer-emoji"), parse(try_from_str = parse_reviewer), multiple_occurrences = true)]
+    #[clap(long("reviewer-emoji"), value_parser = parse_reviewer, action = clap::ArgAction::Append)]
     reviewer_emojis: Vec<(String, String)>,
 
     #[clap(long, env = "DEFAULT_REVIEWER_EMOJI", default_value = "🌜")]
