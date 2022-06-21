@@ -108,6 +108,11 @@ impl PullRequest {
         ));
 
         out_lines.push(format!(
+            "-- Copy URL | shell=bash param1=-c param2=\"printf '%s' '{}' | pbcopy\"",
+            self.url
+        ));
+
+        out_lines.push(format!(
             "-- #{} | shell=bash param1=-c param2=\"printf '%s' '#{}' | pbcopy\"",
             self.number, self.number
         ));
