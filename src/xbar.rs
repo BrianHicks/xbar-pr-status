@@ -2,7 +2,7 @@ use crate::check_status::CheckStatus;
 use anyhow::{Context, Result};
 use clap::Parser;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Status {
     SuccessAndApproved,
     SuccessAwaitingApproval(String),
