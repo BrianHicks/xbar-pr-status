@@ -2,7 +2,7 @@ use anyhow::{anyhow, bail, Result};
 use serde_json::Value;
 use std::str::FromStr;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum CheckStatus {
     Error,
     Expected,

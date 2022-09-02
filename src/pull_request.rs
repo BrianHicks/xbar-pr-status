@@ -169,7 +169,7 @@ impl TryFrom<&Value> for PullRequest {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Check {
     name: String,
     status: CheckStatus,
