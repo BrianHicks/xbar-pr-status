@@ -123,7 +123,7 @@ impl PullRequest {
         ));
 
         if let Some(reviewer) = &self.reviewer {
-            out_lines.push(format!("-- reviewer: {}", reviewer))
+            out_lines.push(format!("-- reviewer: {reviewer}"))
         }
 
         for check in &self.checks {

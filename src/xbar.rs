@@ -108,11 +108,11 @@ fn parse_reviewer(s: &str) -> Result<(String, String)> {
     Ok((
         items
             .next()
-            .with_context(|| format!("I couldn't find a reviewer name in `{}`", s))?
+            .with_context(|| format!("I couldn't find a reviewer name in `{s}`"))?
             .to_string(),
         items
             .next()
-            .with_context(|| format!("I couldn't find a reviewer emoji in `{}`", s))?
+            .with_context(|| format!("I couldn't find a reviewer emoji in `{s}`"))?
             .to_string(),
     ))
 }
