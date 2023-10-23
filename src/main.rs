@@ -47,6 +47,12 @@ fn try_main() -> Result<()> {
     let mut top_line: Vec<&str> = Vec::new();
     let mut menu_lines: Vec<String> = Vec::new();
 
+    if let Ok(errors) = prs.get_array("/errors") {
+        for error in errors {
+            log::error!("{error:#?}");
+        }
+    }
+
     for pr_value in prs.get_array("/data/viewer/pullRequests/nodes")? {
         let pr = match PullRequest::try_from(pr_value).context("could not load a Pull Request") {
             Ok(pr) => pr,
