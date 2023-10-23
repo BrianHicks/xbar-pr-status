@@ -45,6 +45,7 @@
               cargo
               cargo-edit
               cargo-insta
+              rust-analyzer
               rustPackages.clippy
               rustc
               rustfmt
