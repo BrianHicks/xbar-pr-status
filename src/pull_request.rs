@@ -15,7 +15,7 @@ pub struct PullRequest {
     is_draft: bool,
     reviewer: Option<String>,
     approved: bool,
-    queued: bool,
+    queue_position: Option<u64>,
     overall_status: Option<CheckStatus>,
     checks: Vec<Check>,
 }
@@ -71,19 +71,16 @@ impl PullRequest {
         }
     }
 
-    fn queued_from_pr(pr: &Value) -> Result<bool> {
-        Ok(!pr
-            .get("autoMergeRequest")
-            .ok_or_else(|| anyhow!("autoMergeRequest was missing"))?
-            .is_null())
+    fn queue_position_from_pr(pr: &Value) -> Result<Option<u64>> {
+        pr.get_nullable_u64("mergeQueueEntry/position")
     }
 
     pub fn status(&self) -> xbar::Status {
         match &self.overall_status {
             None => xbar::Status::Unknown,
             Some(CheckStatus::Success) => {
-                if self.queued {
-                    xbar::Status::Queued
+                if let Some(position) = self.queue_position {
+                    xbar::Status::Queued(position)
                 } else if self.approved {
                     xbar::Status::SuccessAndApproved
                 } else if let Some(reviewer) = &self.reviewer {
@@ -162,7 +159,7 @@ impl TryFrom<&Value> for PullRequest {
             is_draft: pr.get_bool("/isDraft")?,
             reviewer,
             approved: Self::approved_from_pr(pr)?,
-            queued: Self::queued_from_pr(pr)?,
+            queue_position: Self::queue_position_from_pr(pr)?,
             overall_status: Self::overall_status_from_commit(commit)?,
             checks: Self::checks_from_commit(commit)?,
         })
@@ -240,7 +237,7 @@ mod tests {
 
         #[test]
         fn queued() {
-            assert!(!fixture().queued)
+            assert!(fixture().queue_position.is_none())
         }
 
         #[test]
@@ -305,7 +302,7 @@ mod tests {
 
         #[test]
         fn queued() {
-            assert!(!fixture().queued)
+            assert!(fixture().queue_position.is_none())
         }
 
         #[test]
@@ -365,7 +362,7 @@ mod tests {
 
         #[test]
         fn queued() {
-            assert!(!fixture().queued)
+            assert!(fixture().queue_position.is_none())
         }
 
         #[test]
@@ -425,7 +422,7 @@ mod tests {
 
         #[test]
         fn queued() {
-            assert!(!fixture().queued)
+            assert!(fixture().queue_position.is_none())
         }
 
         #[test]

@@ -13,7 +13,7 @@ pub enum Status {
     Unknown,
     NeedsAttention,
     Error,
-    Queued,
+    Queued(u64),
 }
 
 impl From<&CheckStatus> for Status {
@@ -98,7 +98,17 @@ impl Emoji {
             Status::Unknown => &self.unknown_emoji,
             Status::NeedsAttention => &self.needs_attention_emoji,
             Status::Error => &self.error_emoji,
-            Status::Queued => &self.queued_emoji,
+            // TODO: add emoji options for these
+            Status::Queued(1) => "1️⃣",
+            Status::Queued(2) => "2️⃣",
+            Status::Queued(3) => "3️⃣",
+            Status::Queued(4) => "4️⃣",
+            Status::Queued(5) => "5️⃣",
+            Status::Queued(6) => "6️⃣",
+            Status::Queued(7) => "7️⃣",
+            Status::Queued(8) => "8️⃣",
+            Status::Queued(9) => "9️⃣",
+            Status::Queued(_) => &self.queued_emoji,
         }
     }
 }

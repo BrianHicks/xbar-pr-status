@@ -98,6 +98,8 @@ fn fetch(api_token: &str) -> Result<Value> {
 
     let body: Value = response.json().context("could not read JSON body")?;
 
+    log::debug!("body: {body:#?}");
+
     if let Some(value) = body.pointer("errors") {
         match value {
             Value::Null => (),

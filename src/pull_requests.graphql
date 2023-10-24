@@ -37,8 +37,8 @@ query PullRequests {
             }
           }
         }
-        autoMergeRequest {
-          enabledAt
+        mergeQueueEntry {
+          position
         }
         reviewRequests(last: 1) {
           nodes {
