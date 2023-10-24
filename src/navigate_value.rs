@@ -34,7 +34,7 @@ impl NavigateValue for Value {
     fn get_nullable_u64(&self, pointer: &str) -> Result<Option<u64>> {
         if let Some(value) = self.pointer(pointer) {
             if let Some(num) = value.as_u64() {
-                return Ok(Some(num));
+                Ok(Some(num))
             } else {
                 anyhow::bail!("{} was not an integer", pointer);
             }
