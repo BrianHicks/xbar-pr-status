@@ -1,0 +1,30 @@
+{
+  "number": 1,
+  "title": "Title",
+  "url": "https://github.com/org/repo/pull/1",
+  "headRef": {
+    "name": "cool-topic-branch"
+  },
+  "updatedAt": "2019-01-14T20:46:20Z",
+  "isDraft": false,
+  "commits": {
+    "nodes": [
+      {
+        "commit": {
+          "status": null,
+          "checkSuites": {
+            "nodes": []
+          },
+          "statusCheckRollup": null
+        }
+      }
+    ]
+  },
+  "mergeQueueEntry": {
+    "position": 1
+  },
+  "latestOpinionatedReviews": {
+    "nodes": []
+  }
+}
+

@@ -72,7 +72,7 @@ impl PullRequest {
     }
 
     fn queue_position_from_pr(pr: &Value) -> Result<Option<u64>> {
-        pr.get_nullable_u64("mergeQueueEntry/position")
+        pr.get_nullable_u64("/mergeQueueEntry/position")
     }
 
     pub fn status(&self) -> xbar::Status {
@@ -423,6 +423,53 @@ mod tests {
         #[test]
         fn queued() {
             assert!(fixture().queue_position.is_none())
+        }
+
+        #[test]
+        fn overall_status() {
+            assert_eq!(None, fixture().overall_status)
+        }
+
+        #[test]
+        fn checks() {
+            let empty: Vec<Check> = Vec::new();
+            assert_eq!(empty, fixture().checks)
+        }
+
+        #[test]
+        fn status() {
+            assert_eq!(xbar::Status::Unknown, fixture().status())
+        }
+    }
+
+    mod queued {
+        use super::*;
+
+        fn fixture() -> PullRequest {
+            load(include_str!("test_fixtures/pr_queued.json"))
+        }
+
+        #[test]
+        fn title() {
+            assert_eq!("Title".to_string(), fixture().title)
+        }
+
+        #[test]
+        fn url() {
+            assert_eq!(
+                "https://github.com/org/repo/pull/1".to_string(),
+                fixture().url
+            )
+        }
+
+        #[test]
+        fn approved() {
+            assert!(!fixture().approved)
+        }
+
+        #[test]
+        fn queued() {
+            assert_eq!(Some(1), fixture().queue_position)
         }
 
         #[test]
