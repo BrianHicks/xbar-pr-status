@@ -33,7 +33,7 @@ impl NavigateValue for Value {
         self.pointer(pointer)
             .ok_or_else(|| anyhow!("could not get {}", pointer))?
             .as_u64()
-            .ok_or_else(|| anyhow!("{} was not a integer", pointer))
+            .ok_or_else(|| anyhow!("{} was not an integer", pointer))
     }
 
     fn get_array(&self, pointer: &str) -> Result<&Vec<Self>> {
