@@ -1,0 +1,19 @@
+name: Update Nix
+
+on:
+  schedule:
+    - cron: "0 12 * * 1"
+  # TEMP
+  push:
+    branch: update-nix-automatically
+
+jobs:
+  update-nix:
+    name: Update Nix
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v24
+      - run: nix flake update
+      # DUBIOUS/DEBUG
+      - run: gh
