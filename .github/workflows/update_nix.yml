@@ -15,7 +15,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v24
       - run: nix flake update
-      - run: |
+      - name: Commit and create PR
+        run: |
           if test -z "$(git status)"; then exit 0; fi
 
           git config --global user.name "Github Actions"
