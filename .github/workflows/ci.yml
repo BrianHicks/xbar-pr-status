@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     # TEMP
-    branch: main
+    branches: [main]
 
 jobs:
   build-and-test:
