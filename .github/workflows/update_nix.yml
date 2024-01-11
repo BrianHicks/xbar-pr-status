@@ -15,6 +15,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v24
       - run: nix flake update
-      - run: git checkout --branch update-nix-$(date -I)
+      - run: git checkout -b update-nix-$(date -I)
       - run: git commit --all --message "update Nix sources"
       - run: gh pr create --title "update Nix sources, $(date -I)"
