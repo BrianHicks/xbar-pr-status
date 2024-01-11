@@ -16,6 +16,8 @@ jobs:
       - uses: cachix/install-nix-action@v24
       - run: nix flake update
       - name: Commit and create PR
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           if test -z "$(git status)"; then exit 0; fi
 
