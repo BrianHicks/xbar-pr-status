@@ -2,8 +2,6 @@ name: CI
 
 on:
   push:
-    # TEMP
-    branches: [main]
 
 jobs:
   build-and-test:
