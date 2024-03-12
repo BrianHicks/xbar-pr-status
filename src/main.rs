@@ -40,7 +40,10 @@ fn main() {
 
 fn try_main() -> Result<()> {
     let config = Config::parse();
-    let cutoff_opt = config.since.map(|days| Local::now() - Duration::days(days));
+    let cutoff_opt = config
+        .since
+        .and_then(Duration::try_days)
+        .map(|days| Local::now() - days);
 
     let prs = fetch(&config.github_api_token).context("could not fetch pull requests")?;
 
